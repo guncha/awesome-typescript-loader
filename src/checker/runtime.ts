@@ -167,10 +167,28 @@ function createChecker(receive: (cb: (msg: Req) => void) => void, send: (msg: Re
 
     class Host implements ts.LanguageServiceHost {
         filesRegex: RegExp;
-        getCustomTransformers = loaderConfig.getCustomTransformers;
+        getCustomTransformers?: () => ts.CustomTransformers | undefined;
 
         constructor(filesRegex: RegExp) {
             this.filesRegex = filesRegex;
+
+            let {getCustomTransformers} = loaderConfig;
+
+            if (typeof getCustomTransformers === "function") {
+                this.getCustomTransformers = getCustomTransformers;
+            } else if (typeof getCustomTransformers === "string") {
+                try {
+                    getCustomTransformers = require(getCustomTransformers);
+                } catch (err) {
+                    throw new Error(`Failed to load customTransformers from "${loaderConfig.getCustomTransformers}": ${err.message}`)
+                };
+
+                if (typeof getCustomTransformers !== "function") {
+                    throw new Error(`Custom transformers in "${loaderConfig.getCustomTransformers}" should export a function, got ${typeof getCustomTransformers}`)
+                };
+
+                this.getCustomTransformers = getCustomTransformers;
+            };
         }
 
         getProjectVersion() { return projectVersion.toString(); }
@@ -386,7 +404,8 @@ function createChecker(receive: (cb: (msg: Req) => void) => void, send: (msg: Re
         const trans = compiler.transpileModule(files.get(fileName).text, {
             compilerOptions: compilerOptions,
             fileName,
-            reportDiagnostics: false
+            reportDiagnostics: false,
+            transformers: host.getCustomTransformers ? host.getCustomTransformers() : undefined,
         });
 
         return {
