@@ -38,7 +38,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var utils_1 = require("./utils");
 utils_1.spec(__filename, function () {
     return __awaiter(this, void 0, void 0, function () {
-        var index, file, watcher, stats, stats;
+        var index, file, watcher, stats, stats, stats;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -56,11 +56,17 @@ utils_1.spec(__filename, function () {
                         return "\n            import { a } from './MyFile'\n        ";
                     });
                     file.move('src/MyFile.ts');
+                    return [4, watcher.wait()];
+                case 2:
+                    stats = _a.sent();
+                    utils_1.expectErrors(stats, 1, [
+                        "Type '\"10\"' is not assignable to type 'number'"
+                    ]);
                     file.update(function (text) {
                         return "\n            export let a: number = 10\n        ";
                     });
                     return [4, watcher.wait()];
-                case 2:
+                case 3:
                     stats = _a.sent();
                     utils_1.expectErrors(stats, 0);
                     return [2];

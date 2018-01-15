@@ -67,7 +67,7 @@ function webpackConfig() {
                     loader: LOADER,
                     include: [path.join(process.cwd(), SRC_DIR)],
                     query: {
-                        silent: true
+                        silent: true,
                     }
                 }
             ]
